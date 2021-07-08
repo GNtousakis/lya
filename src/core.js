@@ -2,19 +2,11 @@
 no-shadow-restricted-names: "off" */
 
 const nativeModules = Object.keys(process.binding('natives'));
-const Module = require('module');
-const vm = require('vm');
-// const utils = require('./utils.js');
+const utils = require('./utils.js');
 const config = require('./utils/config.js');
+const defaultNames = require('./utils/default-names.json');
 
 const lyaStartUp = (callerRequire, lyaConfig) => {
-  // All the necessary modules for swap
-  const originalWrap = Module.wrap;
-  const originalRequire = Module.prototype.require;
-  const originalRun = vm.runInThisContext;
-  const originalFilename = Module._resolveFilename;
-  const originalLoad = Module._load;
-
   const moduleName = [];
   const requireLevel = 0;
   const analysisResult = {};
@@ -40,16 +32,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
   const candidateGlobs = new Set();
   const candidateModule = new Map();
 
-  // This is for excludes, valueof, toString etc..
-  const makeExcludes = (list) => {
-    const _excludes = new Map();
-    for (const name of list) {
-      _excludes.set(name, true);
-    }
-    return _excludes;
-  };
-  safetyValve = makeExcludes(safetyValve);
-
   // The counter for the wrapped objects and functions
   const counters = {
     total: 0,
@@ -57,38 +39,8 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     functions: 0,
   };
 
-  // We read and store the data of the json file
-  const defaultNames = require('./utils/default-names.json');
+  safetyValve = utils.makeExcludes(safetyValve);
 
-  // Returns the objects name
-  const getObjectInfo = (obj) => {
-    const objName = objectName.has(obj) ? objectName.get(obj) :
-      methodNames.has(obj) ? methodNames.get(obj) :
-      globalNames.has(obj.name) ? globalNames.get(obj.name) :
-      (obj.name) ? obj.name :
-      null;
-    const objPath = objectPath.has(obj) ? objectPath.get(obj) :
-      null;
-    // TODO: Add more info...?
-    return {
-      name: objName,
-      path: objPath,
-    };
-  };
-
-  const conditionCheck = (name, check, condition) => {
-    if (check !== null) {
-      if (check !== undefined) {
-        if (check.includes(name) === condition) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  };
-
-  // We make a test on fragment
   const env = {
     conf: lyaConfig,
     moduleName: moduleName,
@@ -96,13 +48,6 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     analysisResult: analysisResult,
     getObjectInfo: getObjectInfo,
     counters: counters,
-  };
-
-  // Check that a hook is declared in the analysis
-  const hookCheck = (hook, ...args) => {
-    if (hook !== undefined) {
-      return hook.call(this, ...args);
-    }
   };
 
   // user-globals: e.g., global.x, x,
@@ -415,33 +360,7 @@ const lyaStartUp = (callerRequire, lyaConfig) => {
     return 0;
   };
 
-  const setDeclaration = (name) => {
-    prologue += declaration + ' ' + name +
-      ' = localGlobal["' + name +'"];\n';
-  };
 
-  const passJSONFile = (func, json) => {
-    const returnValue = {};
-    for (const funcClass in json) {
-      if (Object.prototype.hasOwnProperty.call(json, funcClass)) {
-        for (const name of json[funcClass]) {
-          returnValue[name] = func(name);
-        }
-      }
-    }
-
-    return returnValue;
-  };
-
-  // This will run once and produce prologue string
-  const setPrologue = () => {
-    passJSONFile(setDeclaration, defaultNames.globals);
-    prologue = declaration + ' global = localGlobal["proxyGlobal"]\n' +
-      prologue;
-    prologue = lyaConfig.enableWith ? 'with (withGlobal) {\n' +
-      prologue : prologue;
-    return prologue;
-  };
 
   // The first time this runs we create the decl
   const getPrologue = () => {
