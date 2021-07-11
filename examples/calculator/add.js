@@ -1,4 +1,4 @@
-var require = require('../../src_new/core')(require);
+require('../../src_new/core')();
 const calculator = require('./main.js');
 
 console.log('Add 1 + 3 =', calculator.add(1, 3));

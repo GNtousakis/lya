@@ -32,7 +32,9 @@ const modLoad = (...args) => {
 };
 
 /* We modify the `runInThisContext` native function in order to 
-*  create the source manipulation analyses
+*  create the source manipulation analyses and wrap the imported 
+*  values of the module we load. That values include `exports,
+*  require, module, __filename, and dirname`.
 *
 *  @args[0]: src
 *  @args[1]: options
@@ -40,8 +42,9 @@ const modLoad = (...args) => {
 */
 const modRunInThisContext = (...args) => {
     const result = native.runInThisContext(...args);
-
-    return result;
+    const wrappedResults = proxy.setProxy(result);
+    
+    return wrappedResults;
 };
 
 /* We modify the `wrap` native function in order to 

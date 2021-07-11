@@ -16,7 +16,7 @@ const createHandler = () => {
 
 /* This handler wraps the input values of each required module in 
 *  a proxy. Those values are `exports, require, module, __filename,
-*  __dirname`, the node locals
+*  __dirname`, the node locals. The handler adds 
 */
 const importHandler = (target, thisArg, argumentsList) => {
     const handler = createHandler();

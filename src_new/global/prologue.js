@@ -29,11 +29,11 @@ const skip = (keys, exclude) => {
 /* Create the prologue of each module import 
 *
 */
-const createPrologue = (env) => {
+const createPrologueString = (env) => {
     let keys = require(keysPath);
     keys = skip(keys, env);
 };
 
 module.exports = {
-    create: createPrologue,
+    create: createPrologueString,
 }
