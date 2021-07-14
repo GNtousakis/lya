@@ -9,26 +9,26 @@ const objectClone = (obj) => {
   return v8.deserialize(v8.serialize(obj));
 };
 
-/* Create a unique object from a given object
+/* Get all key values from a given object
 *
-*  @obj: the object to be used
-*  @return: the unique object to be used in a WeakMap
+*  @obj: the object to extract the key values
+*  @return: the values to be returned
 */
-const makeUnique = (func) => {
-  const _obj = function(...args) {
-    let obj;
-    if (new.target) {
-      return new obj(...args);
-    } else {
-      return obj.call(this, ...args);
-    }
-  }
+const getValues = (obj) => {
+  let keys = [];
 
-  Object.defineProperty(_obj, 'name', {value: name});
-  return _obj;
+  keys = [...keys, ...Object.keys(obj)];
+  keys = [...keys, ...Object.getOwnPropertyNames(obj)];
+
+  /* Remove all duplicate values from
+  *  the two concated string arrays
+  */
+  keys = [...new Set(keys)];
+
+  return keys;
 };
 
 module.exports = {
   objectClone: objectClone,
-  makeUnique: makeUnique,
+  getValues: getValues,
 };

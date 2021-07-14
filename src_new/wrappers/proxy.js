@@ -1,4 +1,5 @@
 const wrapper = require('./wrapper.js');
+const tools = require('../utils/tools.js');
 const wrapped = new Set();
 
 /* Add newlity proxy wrapped object to list
@@ -85,6 +86,28 @@ const setProxy = (object, config) => {
     return object;  
 };
 
+/* Wrap the selected global object in a proxy
+*
+*  @object: The object you want to wrap in a proxy
+*  @config: The configuration options
+*  @return: The object wrapped in a proxy
+*/
+const setGlobalProxy = (object, config) => {
+    const type = typeof object;
+    
+    if (type === 'object') {
+        object = parseObject(object);
+
+    } else if (type === 'function') {
+        object = wrapFunction(object);
+
+    }
+
+    return object;  
+};
+
+
 module.exports = {
-    setProxy: setProxy
+    setProxy: setProxy,
+    setGlobalProxy: setGlobalProxy,
 }
